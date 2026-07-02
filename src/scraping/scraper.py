@@ -12,6 +12,10 @@ from src.scraping.selectors import (
                  REVIEWS_TAB,  
                  REVIEW_CONTAINER,
                  SEE_MORE_BUTTON,
+                 REVIEW_AUTHOR,
+                 REVIEW_RATING,
+                 REVIEW_DATE,
+                 REVIEW_TEXT,
 )
 
 class GoogleMapsScraper:
@@ -155,15 +159,36 @@ class GoogleMapsScraper:
       Extract the first review container.
       """
 
-      print("Finding first review...")
+      print("Extracting first review...")
 
-      first_review = self.page.locator(REVIEW_CONTAINER).first
+      review = self.page.locator(REVIEW_CONTAINER).first
 
-      first_review.wait_for(state="visible")
+      review.wait_for(state="visible")
 
-      print("First review found!")
+      author = review.locator(REVIEW_AUTHOR).inner_text()
 
-      print(first_review.inner_text())
+      rating = review.locator(REVIEW_RATING).get_attribute("aria-label")
+
+      date = review.locator(REVIEW_DATE).inner_text()
+
+      comment = review.locator(REVIEW_TEXT).inner_text()
+
+      review_data = {
+        "author": author,
+        "rating": rating,
+        "date": date,
+        "review": comment,
+      }
+      
+      print("\n========== REVIEW ==========")
+
+      for key, value in review_data.items():
+        print(f"{key.capitalize():8}: {value}")
+
+      print("============================\n")
+
+      return review_data
+
 
     def expand_reviews(self):
       """
