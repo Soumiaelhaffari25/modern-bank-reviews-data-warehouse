@@ -7,8 +7,12 @@ using Playwright.
 
 from playwright.sync_api import sync_playwright
 from src.scraping.config import GOOGLE_MAPS_URL
-from src.scraping.selectors import SEARCH_BOX
-from src.scraping.selectors import REVIEWS_TAB
+from src.scraping.selectors import (
+                 SEARCH_BOX, 
+                 REVIEWS_TAB,  
+                 REVIEW_CONTAINER,
+                 SEE_MORE_BUTTON,
+)
 
 class GoogleMapsScraper:
     """
@@ -146,6 +150,42 @@ class GoogleMapsScraper:
 
       print("Reviews tab opened.")
 
+    def extract_first_review(self):
+      """
+      Extract the first review container.
+      """
+
+      print("Finding first review...")
+
+      first_review = self.page.locator(REVIEW_CONTAINER).first
+
+      first_review.wait_for(state="visible")
+
+      print("First review found!")
+
+      print(first_review.inner_text())
+
+    def expand_reviews(self):
+      """
+      Expand all truncated reviews.
+      """
+
+      print("Expanding reviews...")
+
+      buttons = self.page.locator(SEE_MORE_BUTTON)
+
+      count = buttons.count()
+
+      print(f"{count} 'See more' buttons found.")
+
+      for i in range(count):
+          try:
+              buttons.nth(i).click(timeout=2000)
+          except:
+              pass
+
+      print("Reviews expanded.")
+
 
 def main():
     """
@@ -163,6 +203,10 @@ def main():
     scraper.click_first_result()
 
     scraper.open_reviews()
+
+    scraper.expand_reviews()
+
+    scraper.extract_first_review()
 
     input("\nPress ENTER to close the browser...")
 
