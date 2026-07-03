@@ -23,3 +23,13 @@ REVIEW_RATING = "span.kvMYJc"
 REVIEW_DATE = "span.rsqaWe"
 
 REVIEW_TEXT = "div.MyEned"
+
+# Bank information
+
+BANK_NAME = "span.iD2gKb"
+
+BANK_RATING = "div.fontDisplayLarge"
+
+BANK_ADDRESS = 'button[data-item-id="address"]'
+
+TOTAL_REVIEWS = "div.fontBodySmall"
