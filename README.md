@@ -158,21 +158,9 @@ The Power BI dashboard provides:
 
 ---
 
-# 📷 Screenshots
-
-You can add screenshots here.
-
-Example:
-
-```
-dashboard/screenshots/dashboard.png
-```
-
----
-
 # 👩‍💻 Author
 
-**Soumia**
+**Soumia El Haffari**
 
 Data & Software Engineering Student
 
