@@ -17,19 +17,16 @@ SEE_MORE_BUTTON = 'button[aria-label="See more"]'
 
 # Review fields
 REVIEW_AUTHOR = "div.d4r55.fontTitleMedium"
-
 REVIEW_RATING = "span.kvMYJc"
-
 REVIEW_DATE = "span.rsqaWe"
-
 REVIEW_TEXT = "div.MyEned"
 
 # Bank information
-
-BANK_NAME = "span.iD2gKb"
-
+BANK_NAME = "span.iD2gKb"      # À vérifier
 BANK_RATING = "div.fontDisplayLarge"
-
 BANK_ADDRESS = 'button[data-item-id="address"]'
-
 TOTAL_REVIEWS = "div.fontBodySmall"
+
+# Search results
+RESULT_CARD = 'div[role="article"]'
+RESULT_LINK = "a.hfpxzc"

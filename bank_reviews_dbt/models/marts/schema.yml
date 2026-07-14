@@ -1,0 +1,97 @@
+version: 2
+
+models:
+
+  - name: dim_bank
+
+    columns:
+
+      - name: bank_id
+        tests:
+          - unique
+          - not_null
+
+      - name: bank_url
+        tests:
+          - unique
+          - not_null
+
+      - name: bank_name
+        tests:
+          - not_null
+
+  - name: dim_location
+
+    columns:
+
+      - name: location_id
+        tests:
+          - unique
+          - not_null
+
+  - name: dim_sentiment
+
+    columns:
+
+      - name: sentiment_id
+        tests:
+          - unique
+          - not_null
+
+      - name: sentiment
+        tests:
+          - unique
+          - not_null
+
+  - name: dim_topic
+
+    columns:
+
+      - name: topic_id
+        tests:
+          - unique
+          - not_null
+
+      - name: topic
+        tests:
+          - unique
+          - not_null
+
+  - name: fact_reviews
+
+    columns:
+
+      - name: review_id
+        tests:
+          - unique
+          - not_null
+
+      - name: bank_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_bank')
+              field: bank_id
+
+      - name: location_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_location')
+              field: location_id
+
+      - name: sentiment_id
+        tests:
+          - relationships:
+              to: ref('dim_sentiment')
+              field: sentiment_id
+
+      - name: topic_id
+        tests:
+          - relationships:
+              to: ref('dim_topic')
+              field: topic_id
+
+      - name: rating
+        tests:
+          - not_null

@@ -1,0 +1,13 @@
+playwright==1.61.0
+beautifulsoup4==4.15.0
+pandas==3.0.3
+psycopg2-binary==2.9.12
+python-dotenv==1.2.2
+langdetect==1.0.9
+tqdm==4.68.3
+dbt-core==1.11.12
+dbt-postgres==1.10.2
+transformers
+keybert
+sentence-transformers
+torch

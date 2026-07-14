@@ -1,0 +1,14 @@
+version: 2
+
+sources:
+  - name: bank_reviews
+
+    database: bank_reviews
+
+    schema: public
+
+    tables:
+
+      - name: banks
+
+      - name: reviews

@@ -4,7 +4,7 @@ scraper.py
 Main module responsible for interacting with Google Maps
 using Playwright.
 """
-
+from src.utils.location import extract_coordinates
 from playwright.sync_api import sync_playwright
 from src.scraping.config import GOOGLE_MAPS_URL
 from src.scraping.selectors import (
@@ -22,7 +22,7 @@ from src.scraping.selectors import (
     TOTAL_REVIEWS,
 )
 from src.export import export_to_csv
-from src.database.loader import load_reviews
+from src.database.load_reviews import load_reviews
 
 class GoogleMapsScraper:
     """
@@ -56,7 +56,7 @@ class GoogleMapsScraper:
 
         # Launch Chromium
         self.browser = self.playwright.chromium.launch(
-            headless=False
+            headless=True
         )
 
         # Create a new browser tab
@@ -66,26 +66,6 @@ class GoogleMapsScraper:
         self.page.set_default_timeout(60000)
 
         print("Google Maps opened successfully!")
-
-    def open_google_maps(self):
-        """
-        Open Google Maps.
-        """
-
-        print("Opening Google Maps...")
-
-        self.page.goto(
-           GOOGLE_MAPS_URL,
-           wait_until="commit",
-           timeout=60000
-        )
-        
-        self.page.wait_for_selector(
-            'input[name="q"]',
-            timeout=60000
-        )
-
-        print("Google Maps loaded succesfully.")
 
     def extract_all_reviews(self):
         """
@@ -194,44 +174,6 @@ class GoogleMapsScraper:
 
         print("Browser closed successfully!")
 
-    def search_bank(self, bank_name: str):
-       """
-       Search for a bank on Google Maps.
-
-       Args:
-           bank_name (str): Name of the bank branch.
-       """
-
-       print(f"Searching for: {bank_name}")
-
-       search_box = self.page.locator(SEARCH_BOX)
-
-       search_box.wait_for(state="visible")
-
-       search_box.fill(bank_name)
-
-       search_box.press("Enter")
-
-       self.page.wait_for_timeout(5000)
-
-       print("Search completed.")
-
-    def click_first_result(self):
-      """
-      Click on the first search result.
-      """
-
-      print("Opening first result...")
-
-      first_result = self.page.locator("a.hfpxzc").first
-
-      first_result.wait_for(state="visible")
-
-      first_result.click()
-
-      self.page.wait_for_timeout(3000)
-
-      print("First result opened.")
       
     def extract_bank_information(self):
         """
@@ -239,23 +181,27 @@ class GoogleMapsScraper:
         """
 
         print("\nExtracting bank information...")
-        
-        print(self.page.content()[:1000])
-        
 
-        bank_name = (
-            self.page
-                .locator(BANK_NAME)
-                .filter(has_text="Attijari")
-                .first
-                .inner_text()
-        )
-
+    # -------------------------
+    # Bank name
+    # -------------------------
         try:
-            rating = self.page.locator(BANK_RATING).first.inner_text()
+            bank_name = (
+                self.page.title()
+                .replace(" - Google Maps", "")
+                .strip()
+            )
         except:
-            rating = ""
+            bank_name = ""
 
+    # -------------------------
+    # Google Maps URL
+    # -------------------------
+        bank_url = self.page.url
+
+    # -------------------------
+    # Address
+    # -------------------------
         try:
             address = (
                 self.page
@@ -267,81 +213,57 @@ class GoogleMapsScraper:
         except:
             address = ""
 
-        try:
-            total_reviews = self.page.locator(TOTAL_REVIEWS).first.inner_text()
-        except:
-            total_reviews = ""
+    # -------------------------
+    # City
+    # -------------------------
+        city = "Rabat"
 
+    # -------------------------
+    # Coordinates
+    # -------------------------
+        current_url = self.page.url
+        latitude, longitude = extract_coordinates(current_url)
+
+    # -------------------------
+    # Build dictionary
+    # -------------------------
         bank = {
             "bank_name": bank_name,
-            "rating": rating,
             "address": address,
-            "total_reviews": total_reviews,
+            "city": city,
+            "latitude": latitude,
+            "longitude": longitude,
         }
 
-        print("\n===== BANK INFORMATION =====")
+        print("\n========== BANK ==========")
 
         for key, value in bank.items():
             print(f"{key:15}: {value}")
 
-        print("============================\n")
+        print("==========================\n")
 
         return bank
-
     def open_reviews(self):
-      """
-      Open the Reviews tab.
-      """
+        
+        print("Opening Reviews tab...")
+        try:
+            tabs = self.page.locator(REVIEWS_TAB)
 
-      print("Opening Reviews tab...")
+            review_tab = tabs.nth(1)
 
-      tabs = self.page.locator(REVIEWS_TAB)
+            review_tab.wait_for(state="visible", timeout=10000)
 
-      review_tab = tabs.nth(1)
+            review_tab.click()
 
-      review_tab.wait_for(state="visible")
+            self.page.wait_for_timeout(3000)
+            
+            print("Reviews tab opened.")
 
-      review_tab.click()
+            return True
 
-      self.page.wait_for_timeout(3000)
-
-      print("Reviews tab opened.")
-
-    def extract_first_review(self):
-      """
-      Extract the first review container.
-      """
-
-      print("Extracting first review...")
-
-      review = self.page.locator(REVIEW_CONTAINER).first
-
-      review.wait_for(state="visible")
-
-      author = review.locator(REVIEW_AUTHOR).inner_text()
-
-      rating = review.locator(REVIEW_RATING).get_attribute("aria-label")
-
-      date = review.locator(REVIEW_DATE).inner_text()
-
-      comment = review.locator(REVIEW_TEXT).inner_text()
-
-      review_data = {
-        "author": author,
-        "rating": rating,
-        "date": date,
-        "review": comment,
-      }
-      
-      print("\n========== REVIEW ==========")
-
-      for key, value in review_data.items():
-        print(f"{key.capitalize():8}: {value}")
-
-      print("============================\n")
-
-      return review_data
-
+        except:
+            print("No Reviews tab found.")
+            return False
 
     def expand_reviews(self):
         """
@@ -367,6 +289,24 @@ class GoogleMapsScraper:
                 break
 
         print("Reviews expanded.")
+        
+    def open_bank(self, url):
+        """
+        Open a bank directly from its Google Maps URL.
+        """
+
+        print(f"\nOpening bank...\n")
+
+        self.page.goto(
+            url,
+            wait_until="commit",
+            timeout=60000
+        )
+
+        self.page.wait_for_timeout(5000)
+
+        print("Bank opened successfully.")
+        print(f"Current URL: {self.page.url}")
 
 def main():
     """
@@ -376,40 +316,27 @@ def main():
     scraper = GoogleMapsScraper()
 
     scraper.launch_browser()
-
-    scraper.open_google_maps()
-
-    scraper.search_bank("Attijariwafa Bank Agdal Rabat")
-
-    scraper.click_first_result()
     
-    scraper.open_reviews()
+    url= input("Enter Google Maps URL:")
     
-    scraper.page.wait_for_timeout(2000)
+    scraper.open_bank(url)
     
     bank = scraper.extract_bank_information()
+    
+    scraper.open_reviews()
 
     scraper.expand_reviews()
 
     reviews = scraper.extract_all_reviews()
     
-    export_to_csv(
-        reviews,
-        "data/raw/reviews.csv"
-    )
-    
     load_reviews(
         reviews,
-        "Attijari WafaBank Agdal"
+        bank["bank_url"]
     )
 
-    print("\n===== ALL REVIEWS =====\n")
+    print(f"\n{len(reviews)} review(s) scraped successfully.")
 
-    for review in reviews:
-        print(review)
-        print("-" * 80)
-
-    input("\nPress ENTER to close the browser...")
+    input("\nPress ENTER to close...")
 
     scraper.close_browser()
 
