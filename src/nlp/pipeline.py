@@ -12,6 +12,7 @@ from src.nlp.language import detect_language
 from src.nlp.sentiment import predict_sentiment
 from src.nlp.keywords import extract_keywords
 from src.nlp.topics import predict_topic
+from src.database.connection import create_connection
 
 
 def run_pipeline():
@@ -22,6 +23,7 @@ def run_pipeline():
     reviews = read_reviews()
 
     print(f"\n{len(reviews)} reviews found.\n")
+    connection = create_connection()
 
     success = 0
     failed = 0
@@ -34,9 +36,16 @@ def run_pipeline():
 
         try:
 
-            # Skip empty reviews
-            if not review_text:
-                print(f"Review {review_id} skipped (empty review).")
+            # Empty reviews: mark them so they aren't reprocessed every run
+            if not review_text or not review_text.strip():
+                update_review(
+                    review_id=review_id,
+                    language="unknown",
+                    sentiment="No Text",
+                    keywords="",
+                    topic="No Text",
+                    connection=connection,
+                )
                 continue
 
             # Clean text
@@ -61,6 +70,7 @@ def run_pipeline():
                 sentiment=sentiment,
                 keywords=keywords,
                 topic=topic,
+                connection=connection,
             )
 
             success += 1
@@ -82,6 +92,7 @@ def run_pipeline():
             )
 
             print(e)
+    connection.close()
 
     print("\n========== SUMMARY ==========")
     print(f"Processed : {success}")

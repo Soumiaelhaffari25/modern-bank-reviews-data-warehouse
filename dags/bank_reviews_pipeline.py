@@ -19,7 +19,7 @@ with DAG(
 
     scraping = DockerOperator(
         task_id="scraping",
-        image="mcr.microsoft.com/playwright/python:v1.61.0-jammy",
+        image="bank-scraper:latest",
         command="python -m src.scraping.pipeline",
         docker_url="unix://var/run/docker.sock",
         network_mode="modern-bank-reviews-data-warehouse_default",
@@ -32,6 +32,7 @@ with DAG(
             )
         ],
         working_dir="/workspace",
+        mount_tmp_dir=False,
     )
 
     nlp = BashOperator(

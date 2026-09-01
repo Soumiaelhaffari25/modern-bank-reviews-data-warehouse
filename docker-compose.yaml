@@ -66,6 +66,10 @@ x-airflow-common:
     AIRFLOW__API_AUTH__JWT_SECRET: ${AIRFLOW__API_AUTH__JWT_SECRET:-airflow_jwt_secret}
     AIRFLOW__API_AUTH__JWT_ISSUER: ${AIRFLOW__API_AUTH__JWT_ISSUER:-airflow}
     PYTHONPATH: /opt/airflow
+    HF_HOME: /opt/airflow/hf_cache
+    HF_TOKEN: ${HF_TOKEN:-}
+    AIRFLOW__SCHEDULER__SCHEDULER_ZOMBIE_TASK_THRESHOLD: 3600
+    AIRFLOW__CELERY_BROKER_TRANSPORT_OPTIONS__VISIBILITY_TIMEOUT: 18000
     # yamllint disable rule:line-length
     # Use simple http server on scheduler for health checks
     # See https://airflow.apache.org/docs/apache-airflow/stable/administration-and-deployment/logging-monitoring/check-health.html#scheduler-health-check-server
@@ -85,7 +89,7 @@ x-airflow-common:
    - ${AIRFLOW_PROJ_DIR:-.}/bank_reviews_dbt:/opt/airflow/bank_reviews_dbt
    - /var/run/docker.sock:/var/run/docker.sock
    - ./.dbt:/home/airflow/.dbt
-   - ./cache/huggingface:/home/airflow/.cache/huggingface
+   - hf-cache:/opt/airflow/hf_cache
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on:
     &airflow-common-depends-on
@@ -338,7 +342,7 @@ services:
       <<: *airflow-common-depends-on
       airflow-init:
         condition: service_completed_successfully
-scraper:
+  scraper:
     image: mcr.microsoft.com/playwright/python:v1.61.0-jammy
     working_dir: /workspace
     command: sleep infinity
@@ -349,3 +353,4 @@ scraper:
 
 volumes:
   postgres-db-volume:
+  hf-cache:

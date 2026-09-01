@@ -19,11 +19,8 @@ print("Keyword model loaded.")
 print("Loading topic model...")
 
 topic_model = pipeline(
-
     task="zero-shot-classification",
-
-    model="facebook/bart-large-mnli"
-
+    model="MoritzLaurer/deberta-v3-base-zeroshot-v1.1-all-33",
 )
 
 print("Topic model loaded.")

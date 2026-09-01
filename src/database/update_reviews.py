@@ -13,12 +13,17 @@ def update_review(
     sentiment: str,
     keywords: str,
     topic: str,
+    connection=None,
 ):
     """
     Update a review with NLP results.
     """
 
-    connection = create_connection()
+    own_connection = False
+
+    if connection is None:
+        connection = create_connection()
+        own_connection = True
 
     cursor = connection.cursor()
 
@@ -44,5 +49,6 @@ def update_review(
     connection.commit()
 
     cursor.close()
-    connection.close()
-    
+
+    if own_connection:
+        connection.close()

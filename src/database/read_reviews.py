@@ -24,6 +24,7 @@ def read_reviews():
             review_id,
             review_text
         FROM reviews
+        WHERE sentiment IS NULL
         ORDER BY review_id
     """)
 

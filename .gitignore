@@ -28,3 +28,4 @@ dbt_packages/
 *.pbix.lck
 
 *.py[cod]
+cache/
