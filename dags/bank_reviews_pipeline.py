@@ -5,6 +5,7 @@ from airflow.operators.empty import EmptyOperator
 from airflow.operators.bash import BashOperator
 from airflow.providers.docker.operators.docker import DockerOperator
 from docker.types import Mount
+import os
 
 
 with DAG(
@@ -26,7 +27,7 @@ with DAG(
         auto_remove="success",
         mounts=[
             Mount(
-                source=r"C:\Users\Soumia\Desktop\modern-bank-reviews-data-warehouse",
+                source=os.environ["HOST_PROJECT_PATH"],
                 target="/workspace",
                 type="bind",
             )
